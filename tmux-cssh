@@ -10,6 +10,7 @@ SSH_COMMAND="ssh"
 SSH_ARGS=""
 SYNCHRONIZE_PANES="true"
 TMUX_LAYOUT="tiled"
+ATTACH_TO_TMUX="true"
 
 # Config-file in home directory
 CONFIG_FILENAME=".tmux-cssh"
@@ -64,6 +65,7 @@ syntax() {
 
 	echo "-dc | --dont-clusterize                    Don't clusterize ..."
 	echo "-ds | --dont-synchronize                   Don't synchronize keyboard in panes, default: tmux should synchronize."
+  echo "-d | --detach                              Stay detached (Do not attach to tmux session)"
 	echo
 
 	echo "* Other arguments will be interpreted as '-sc'."
@@ -116,6 +118,7 @@ analyseParameters() {
 				get_parameters_from_config_settings_name "$2"
 				shift;;
 			-dc|--dont-clusterize|-ds|--dont-synchronize) SYNCHRONIZE_PANES="false";;
+      -d|--detach) ATTACH_TO_TMUX="true";;
 			*)
 				if [ "$1" != "" ]; then
 					if [ -z "$HOSTS" ]; then
@@ -310,5 +313,9 @@ fi
 # Setup synchronizing panes
 synchronizePanes ${SYNCHRONIZE_PANES} ${TMUX_SESSION_NAME}
 
-# Attach to tmux session
-tmux attach-session -t "${TMUX_SESSION_NAME}"
+if [ "${ATTACH_TO_TMUX}" = "true" ]; then
+  # Attach to tmux session
+  tmux attach-session -t "${TMUX_SESSION_NAME}"
+else
+  tmux has -t  "${TMUX_SESSION_NAME}" && echo  "${TMUX_SESSION_NAME}"
+fi
